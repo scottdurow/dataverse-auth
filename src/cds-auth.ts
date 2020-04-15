@@ -6,7 +6,6 @@ const electron = require("electron/");
 import proc from "child_process";
 
 // Get the tenant and env url from the arguments
-console.log(process.argv);
 if (process.argv.length < 4) {
   console.log(
     "Please supply the tenant (e.g. contoso.onmicrosoft.com) and CDS envrionment url (e.g. contoso-env.crm11.dynamics.com) ",
