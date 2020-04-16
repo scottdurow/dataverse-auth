@@ -1,8 +1,7 @@
 import { BrowserWindow } from "electron";
 import { TokenResponse } from "adal-node";
-import { argTenant } from "./index";
 import { adalAuth } from "./adalAuth";
-export function authenticate(): Promise<TokenResponse> {
+export function authenticate(tenant: string, envUrl: string): Promise<TokenResponse> {
   return new Promise((resolve, reject) => {
     let loginComplete = false;
     // Create the browser window.
@@ -16,7 +15,7 @@ export function authenticate(): Promise<TokenResponse> {
         nodeIntegration: true,
       },
     });
-    const url = `https://login.microsoftonline.com/${argTenant}/oauth2/v2.0/authorize?client_id=51f81489-12ee-4a9e-aaae-a2591f45987d&response_type=code&haschrome=1&redirect_uri=app%3A%2F%2F58145B91-0C36-4500-8554-080854F2AC97&scope=openid`;
+    const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=51f81489-12ee-4a9e-aaae-a2591f45987d&response_type=code&haschrome=1&redirect_uri=app%3A%2F%2F58145B91-0C36-4500-8554-080854F2AC97&scope=openid`;
     // Navigate to the get code page
     win.loadURL(url);
     win.on("closed", function() {
@@ -30,7 +29,7 @@ export function authenticate(): Promise<TokenResponse> {
         // Stop the redirect to the app: endpoint
         event.preventDefault();
         loginComplete = true;
-        adalAuth(newUrl).then(
+        adalAuth(envUrl, newUrl).then(
           function(tokenResponse) {
             const token = tokenResponse as TokenResponse;
             console.log("Token Aquisition Completed");

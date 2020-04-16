@@ -1,6 +1,5 @@
 import { AuthenticationContext } from "adal-node";
-import { argEnvUrl } from "./index";
-export function adalAuth(redirectUrl: string): Promise<unknown> {
+export function adalAuth(argEnvUrl: string, redirectUrl: string): Promise<unknown> {
   const authorityHostUrl = "https://login.windows.net/common";
   const server = argEnvUrl;
   const regex = /(?<=code=)[^&]*/gm;

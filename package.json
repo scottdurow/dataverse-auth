@@ -1,6 +1,6 @@
 {
   "name": "node-cds-auth",
-  "version": "1.0.0",
+  "version": "1.0.4s",
   "description": "Performs on-behalf-of auth against a CDS envrionment. Stores the token a local token.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,10 +8,11 @@
     "cds-auth": "dist/cds-auth.js"
   },
   "scripts": {
-    "build": "tsc",
-    "prepublish": "tsc",
+    "build": "genversion --es6 --semi src/version.ts & tsc",
+    "prepublish": "genversion --es6 --semi src/version.ts & tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "genversion": "genversion"
   },
   "author": "",
   "license": "ISC",
@@ -29,8 +30,9 @@
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-react": "^7.19.0",
+    "genversion": "^2.2.0",
     "prettier": "^1.19.1",
-    "typescript-eslint": "0.0.1-alpha.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "typescript-eslint": "0.0.1-alpha.0"
   }
 }
