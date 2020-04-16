@@ -3,7 +3,7 @@ import { app } from "electron";
 import { authenticate } from "./authenticate";
 import { addTokenToCache } from "./TokenCache";
 import { version } from "./version";
-export * from "./TokenCache";
+
 const argTenant = process.argv[2]; //"contoso.onmicrosoft.com";
 const argEnvUrl = process.argv[3]; //"contoso-env.crm11.dynamics.com";
 console.log(`cds-auth v${version}`);

@@ -1,6 +1,6 @@
 {
   "name": "node-cds-auth",
-  "version": "1.0.4s",
+  "version": "1.0.5",
   "description": "Performs on-behalf-of auth against a CDS envrionment. Stores the token a local token.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
