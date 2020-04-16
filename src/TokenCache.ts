@@ -1,5 +1,5 @@
 import Cryptr from "cryptr";
-import { TokenResponse } from "adal-node";
+import { TokenResponse, AuthenticationContext } from "adal-node";
 import os from "os";
 import path from "path";
 import fs from "fs";
@@ -45,4 +45,38 @@ export function getTokenFromCache(envUrl: string): TokenResponse {
   }
   const jsonToken = getCrypto().decrypt(tokenEncrypted);
   return JSON.parse(jsonToken) as TokenResponse;
+}
+export function getAccessToken(envUrl: string): Promise<string> {
+  return new Promise<string>(function(resolve, reject) {
+    let accessToken = "";
+    const token = getTokenFromCache(envUrl);
+    const context = new AuthenticationContext("https://login.windows.net/common");
+    const server = "https://" + envUrl;
+    const clientId = "51f81489-12ee-4a9e-aaae-a2591f45987d"; // Client ID used by Microsoft samples
+    // Check if the token has expired
+    const expiryDate = new Date(Date.parse(token.expiresOn.toString()));
+    const nowDate = new Date();
+    const expiresInMinutes = (((expiryDate as unknown) as number) - ((nowDate as unknown) as number)) / 1000 / 60;
+    const hasTokenExpired = expiresInMinutes < 5;
+    console.debug(`Token expires in: ${expiresInMinutes} minutes`);
+    if (hasTokenExpired) {
+      // Get new token using refresh token
+      context.acquireTokenWithRefreshToken(token.refreshToken as string, clientId, server, (err, tokenResponse) => {
+        if (err) {
+          console.debug("Error:" + err);
+          reject(err);
+        } else {
+          const newToken = tokenResponse as TokenResponse;
+          console.debug(`Refreshed until: ${(tokenResponse as TokenResponse).expiresOn}`);
+          addTokenToCache(envUrl, newToken);
+          accessToken = token.accessToken;
+          resolve(accessToken);
+        }
+      });
+    } else {
+      // Use current token
+      accessToken = token.accessToken;
+      resolve(accessToken);
+    }
+  });
 }
