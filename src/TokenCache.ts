@@ -6,6 +6,8 @@ import fs from "fs";
 export interface TokenCache {
   [index: string]: string;
 }
+let _inMemoryTokenCache: TokenCache | undefined;
+
 function getAuthCachePath(): string {
   const homeDirPath = os.homedir();
   const authCachePath = path.join(homeDirPath, "cds-auth-cache");
@@ -16,15 +18,18 @@ function getCrypto(): Cryptr {
   return cryptr;
 }
 export function loadTokenCache(): TokenCache {
-  const authCachePath = getAuthCachePath();
-  let tokenCache = {} as TokenCache;
+  if (!_inMemoryTokenCache) {
+    const authCachePath = getAuthCachePath();
+    let tokenCache = {} as TokenCache;
 
-  // Load existing file if there is one
-  if (fs.existsSync(authCachePath)) {
-    const tokenCacheJSON = fs.readFileSync(authCachePath);
-    tokenCache = (JSON.parse(tokenCacheJSON.toString()) as unknown) as TokenCache;
+    // Load existing file if there is one
+    if (fs.existsSync(authCachePath)) {
+      const tokenCacheJSON = fs.readFileSync(authCachePath);
+      tokenCache = (JSON.parse(tokenCacheJSON.toString()) as unknown) as TokenCache;
+    }
+    _inMemoryTokenCache = tokenCache;
   }
-  return tokenCache;
+  return _inMemoryTokenCache;
 }
 
 export function addTokenToCache(envUrl: string, token: TokenResponse): void {
@@ -34,6 +39,7 @@ export function addTokenToCache(envUrl: string, token: TokenResponse): void {
   const jsonTokenEncrypyed = getCrypto().encrypt(jsonToken);
   // Add to the token cache
   tokenCache[envUrl] = jsonTokenEncrypyed;
+  _inMemoryTokenCache = tokenCache;
   fs.writeFileSync(getAuthCachePath(), JSON.stringify(tokenCache));
 }
 
@@ -69,7 +75,7 @@ export function getAccessToken(envUrl: string): Promise<string> {
           const newToken = tokenResponse as TokenResponse;
           console.debug(`Refreshed until: ${(tokenResponse as TokenResponse).expiresOn}`);
           addTokenToCache(envUrl, newToken);
-          accessToken = token.accessToken;
+          accessToken = newToken.accessToken;
           resolve(accessToken);
         }
       });
