@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
 import { TokenResponse } from "adal-node";
 import { adalAuth } from "./adalAuth";
 import https from "https";
@@ -32,7 +32,12 @@ function getTenantUrl(envUrl: string): Promise<string> {
 }
 
 export async function authenticate(tenant: string, envUrl: string): Promise<TokenResponse> {
-  tenant = await getTenantUrl(envUrl);
+  app.allowRendererProcessReuse = true;
+
+  const [_, url] =  await Promise.all([
+    app.whenReady(),
+    getTenantUrl(envUrl)
+  ]);
 
   return new Promise((resolve, reject) => {
     let loginComplete = false;
@@ -50,7 +55,7 @@ export async function authenticate(tenant: string, envUrl: string): Promise<Toke
     });
 
     // Navigate to the get code page
-    win.loadURL(`${tenant}?client_id=51f81489-12ee-4a9e-aaae-a2591f45987d&response_type=code&haschrome=1&redirect_uri=app%3A%2F%2F58145B91-0C36-4500-8554-080854F2AC97&scope=openid`);
+    win.loadURL(`${url}?client_id=51f81489-12ee-4a9e-aaae-a2591f45987d&response_type=code&haschrome=1&redirect_uri=app%3A%2F%2F58145B91-0C36-4500-8554-080854F2AC97&scope=openid`);
     win.on("closed", function() {
       if (!loginComplete) {
         reject("Login Closed");
