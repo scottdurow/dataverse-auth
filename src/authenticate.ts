@@ -37,6 +37,7 @@ export async function authenticate(tenant: string, envUrl: string): Promise<Toke
   return new Promise((resolve, reject) => {
     let loginComplete = false;
 
+    // Create the browser window.
     const win = new BrowserWindow({
       width: 800,
       height: 600,
