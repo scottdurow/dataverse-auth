@@ -13,3 +13,12 @@ E.g.\
 `~$ npx node-cds-auth contoso.onmicrosoft.com contosoorg.crm.dynamics.com`
 For more information see the [cdsify project](https://github.com/scottdurow/cdsify/wiki)
 
+## Tested on
+- Linux
+  - ✔ Manjaro
+  - ✔ Ubuntu
+  - ❌ Debian (see [issue #1](https://github.com/scottdurow/node-cds-auth/issues/1))
+- MacOS
+  - ✔ 10.15
+- Windows
+  - ✔ 10
