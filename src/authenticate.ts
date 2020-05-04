@@ -1,9 +1,50 @@
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
 import { TokenResponse } from "adal-node";
 import { adalAuth } from "./adalAuth";
-export function authenticate(tenant: string, envUrl: string): Promise<TokenResponse> {
+import https from "https";
+
+// Create the browser window.
+function getTenantUrl(envUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let url = envUrl.endsWith("/") ? `${envUrl}api/data` : `${envUrl}/api/data`;
+
+    url =
+      !url.startsWith("http://") && !url.startsWith("https://") ? `https://${url}` : url.replace("http://", "https://");
+
+    https.get(url, response => {
+      if (response.headers["www-authenticate"]) {
+        try {
+          resolve(response.headers["www-authenticate"].split("=")[1].split(",")[0]);
+        } catch (err) {
+          console.log(
+            "Failed to parse 'www-authenticate' header from Environment\n\n" + response.headers["www-authenticate"],
+          );
+          reject("Failed to parse 'www-authenticate' header from Environment");
+        }
+      } else {
+        const message = `${envUrl} is not valid Environment`;
+        console.log(message);
+        reject(message);
+      }
+    });
+  });
+}
+
+export async function authenticate(envUrl: string, tenantUrl?: string): Promise<TokenResponse> {
+  app.allowRendererProcessReuse = true;
+
+  let authUrl = `https://login.microsoftonline.com/${tenantUrl}/oauth2/v2.0/authorize`;
+  if (!tenantUrl) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_, url] = await Promise.all([, getTenantUrl(envUrl)]);
+    authUrl = url;
+  } else {
+    await app.whenReady();
+  }
+
   return new Promise((resolve, reject) => {
     let loginComplete = false;
+
     // Create the browser window.
     const win = new BrowserWindow({
       width: 800,
@@ -15,9 +56,11 @@ export function authenticate(tenant: string, envUrl: string): Promise<TokenRespo
         nodeIntegration: true,
       },
     });
-    const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=51f81489-12ee-4a9e-aaae-a2591f45987d&response_type=code&haschrome=1&redirect_uri=app%3A%2F%2F58145B91-0C36-4500-8554-080854F2AC97&scope=openid`;
+
     // Navigate to the get code page
-    win.loadURL(url);
+    win.loadURL(
+      `${authUrl}?client_id=51f81489-12ee-4a9e-aaae-a2591f45987d&response_type=code&haschrome=1&redirect_uri=app%3A%2F%2F58145B91-0C36-4500-8554-080854F2AC97&scope=openid`,
+    );
     win.on("closed", function() {
       if (!loginComplete) {
         reject("Login Closed");

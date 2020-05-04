@@ -1,6 +1,6 @@
 {
   "name": "node-cds-auth",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Performs on-behalf-of auth against a CDS envrionment. Stores the token a local token.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,6 +12,7 @@
     "prepublish": "genversion --es6 --semi src/version.ts & tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
+    "cds-auth": "node dist/cds-auth.js",
     "genversion": "genversion"
   },
   "author": "",
