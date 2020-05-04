@@ -6,10 +6,8 @@ const electron = require("electron/");
 import proc from "child_process";
 
 // Get the tenant and env url from the arguments
-if (process.argv.length < 4) {
-  console.log(
-    "Please supply the tenant (e.g. contoso.onmicrosoft.com) and CDS envrionment url (e.g. contoso-env.crm11.dynamics.com) ",
-  );
+if (process.argv.length < 3) {
+  console.log("Please supply the CDS envrionment url (e.g. >node-cds-auth contoso-env.crm11.dynamics.com)");
   process.exit();
 } else {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -18,7 +16,7 @@ if (process.argv.length < 4) {
 
 function main(): void {
   const currentDir = __dirname;
-  const child = proc.spawn(electron, [currentDir + "/.", process.argv[2], process.argv[3]], {
+  const child = proc.spawn(electron, [currentDir + "/.", ...process.argv.slice(2)], {
     stdio: "inherit",
     windowsHide: false,
   });
@@ -27,7 +25,7 @@ function main(): void {
     process.exit(code);
   });
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type
   const handleTerminationSignal = function(signal: any) {
     process.on(signal, function signalHandler() {
       if (!child.killed) {
