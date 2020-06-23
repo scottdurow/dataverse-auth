@@ -31,8 +31,8 @@ For NPX to work you will have to enable unprivileged user namespaces. Instructio
 
 ### Method2, install and modify permissions
 First, install the NPM package, globally or in a dedicated project. After the install navigate to $NPM_PACKAGES/lib/node_modules/node-cds-auth/node_modules/electron/dist (tip: if you try to run cds-auth the full path will be in the error message)
-Change the owner of chrome-sandbox to root and chmod it to 4755:
-`~$ sudo chown root chrome-sandbox && sudo chmod 4755 chrome-sandbox'
+Change the owner of chrome-sandbox to root and chmod it to 4755:  
+`~$ sudo chown root chrome-sandbox && sudo chmod 4755 chrome-sandbox`
 
-Now you can run it like any other package:
+Now you can run it like any other package:  
 `~$ cds-auth myorg.crm.dynamics.com`
