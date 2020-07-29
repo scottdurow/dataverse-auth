@@ -7,7 +7,9 @@ import proc from "child_process";
 
 // Get the tenant and env url from the arguments
 if (process.argv.length < 3) {
-  console.log("Please supply the CDS envrionment url (e.g. >node-cds-auth contoso-env.crm11.dynamics.com)");
+  console.log(
+    "Please supply the Microsoft Dataflex envrionment url (e.g. >dataflex-auth contoso-env.crm11.dynamics.com)",
+  );
   process.exit();
 } else {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
