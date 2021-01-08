@@ -8,7 +8,7 @@ import proc from "child_process";
 // Get the tenant and env url from the arguments
 if (process.argv.length < 3) {
   console.log(
-    "Please supply the Microsoft Dataflex envrionment url (e.g. >dataflex-auth contoso-env.crm11.dynamics.com)",
+    "Please supply the Microsoft Dataverse envrionment url (e.g. >dataverse-auth contoso-env.crm11.dynamics.com)",
   );
   process.exit();
 } else {

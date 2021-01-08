@@ -15,10 +15,10 @@ if (process.argv.length >= 4) {
   argEnvUrl = process.argv[2]; //"contoso-env.crm11.dynamics.com";
 }
 
-console.log(`dataflex-auth v${version}`);
+console.log(`dataverse-auth v${version}`);
 console.log(`Authenticating for Environment:'${argEnvUrl}'` + (argTenant ? ` Tenant:'${argTenant}` : ""));
 
-// This is called via the bin command dataflex-auth
+// This is called via the bin command dataverse-auth
 // Either <tenantUrl> <environmentUrl> can be provided
 // Or just <environmentUrl> and we lookup the <tenantUrl>
 
