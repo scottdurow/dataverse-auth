@@ -1,6 +1,6 @@
 {
   "name": "dataverse-auth",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Performs on-behalf-of auth against a Microsoft Dataverse envrionment. Stores the token a local token for use in other NodeJS applications.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
