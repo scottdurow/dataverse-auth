@@ -1,18 +1,18 @@
 {
-  "name": "dataflex-auth",
-  "version": "1.0.8",
-  "description": "Performs on-behalf-of auth against a Microsoft Dataflex Pro envrionment. Stores the token a local token for use in other NodeJS applications.",
+  "name": "dataverse-auth",
+  "version": "1.0.9",
+  "description": "Performs on-behalf-of auth against a Microsoft Dataverse envrionment. Stores the token a local token for use in other NodeJS applications.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "dataflex-auth": "dist/dataflex-auth.js"
+    "dataverse-auth": "dist/dataverse-auth.js"
   },
   "scripts": {
     "build": "genversion --es6 --semi src/version.ts & tsc",
     "prepublish": "genversion --es6 --semi src/version.ts & tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "dataflex-auth": "node dist/dataflex-auth.js",
+    "dataverse-auth": "node dist/dataverse-auth.js",
     "genversion": "genversion"
   },
   "author": "",
