@@ -79,7 +79,7 @@ function getCommand(): string | undefined {
 
 function listAuth(): void {
   console.log("Current Microsoft Dataverse user profiles:");
-  getAllUsers().forEach((a, i) => console.log(`[${i}]   ${a.environment}\t: ${a.userName}`));
+  getAllUsers().forEach((a, i) => console.log(`[${i}]   ${a.userName}\t: ${a.environment}`));
   exit();
 }
 

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm start org1bfe9950.crm3.dynamics.com test-connection",
+            "command": "npm start org1bfe9950.crm3.dynamics.com",
             "name": "Run npm start",
             "request": "launch",
             "type": "node-terminal"

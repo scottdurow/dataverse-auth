@@ -16,7 +16,6 @@ import {
   SilentFlowRequest,
 } from "@azure/msal-node";
 import fetch from "node-fetch";
-import * as os from "os";
 import * as fs from "fs";
 import { msalConfig } from "./MsalConfig";
 import { ILoggerCallback, LogLevel } from "@azure/msal-common";
@@ -28,8 +27,7 @@ let userNameLookup: UserLookup | undefined;
 let msalClient: PublicClientApplication | undefined;
 
 function getLookupPath(): string {
-  const homeDirPath = os.homedir();
-  return path.join(homeDirPath, "dataverse-auth-users");
+  return path.join(Environment.getUserRootDirectory(), "./dataverse-auth-users");
 }
 
 function getTokenCachePath(): string {
@@ -49,6 +47,7 @@ function loadLookup(): UserLookup {
   }
   return userNameLookup as UserLookup;
 }
+
 function saveLookup(): void {
   fs.writeFileSync(getLookupPath(), JSON.stringify(userNameLookup));
 }
@@ -78,8 +77,8 @@ export function removeAccountByEnvUrl(environmentUrl: string): void {
 
 export function getAllUsers(): { userName: string; environment: string }[] {
   const lookup = loadLookup();
-  return Object.keys(lookup).map((userName) => {
-    return { environment: lookup[userName], userName: userName };
+  return Object.keys(lookup).map((environment) => {
+    return { userName: lookup[environment], environment };
   });
 }
 

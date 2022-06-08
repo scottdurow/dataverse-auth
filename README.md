@@ -41,6 +41,8 @@ Now you can run it like any other package:
 To build & test locally, use:
 ```
 npm run start org.api.crm3.dynamics.com
+npm run start list
+npm run start org.api.crm3.dynamics.com test-connection
 ```
 
 ### ADAL -> MSAL
