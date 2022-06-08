@@ -1,6 +1,6 @@
 {
   "name": "dataverse-auth",
-  "version": "1.0.9",
+  "version": "2.0.0-beta",
   "description": "Performs on-behalf-of auth against a Microsoft Dataverse environment. Stores the token a local token for use in other NodeJS applications.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "dist": "genversion --es6 --semi src/version.ts & tsc",
-    "prepublish": "genversion --es6 --semi src/version.ts & tsc",
+    "prepublish": "genversion --es6 --semi --double src/version.ts & tsc",
     "start": "tsc & node dist/dataverse-auth.js",
     "electron": "tsc & electron .",
     "genversion": "genversion"
@@ -24,8 +24,7 @@
     "electron": "^19.0.3",
     "enquirer": "^2.3.6",
     "eslint-plugin-sonarjs": "^0.13.0",
-    "node-fetch": "^2.6.7",
-    "os": "^0.1.2"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.27.1",
