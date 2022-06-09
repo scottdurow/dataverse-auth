@@ -15,8 +15,8 @@
     "test": "tsc",
     "prepublishOnly": "npm version patch",
     "preversion": "npm test",
-    "version": "npm run build",
-    "postversion": "genversion --es6 --semi --double src/version.ts & git add . & git commit -m \"Version bump\" & git push"
+    "version": "genversion --es6 --semi --double src/version.ts & npm run build",
+    "postversion": "git add . & git commit -m \"Version bump\" & git push"
   },
   "author": "",
   "license": "ISC",
