@@ -15,7 +15,13 @@ import {
 import { version } from "./version";
 import { prompt } from "enquirer";
 import { SimpleLogger } from "./MsalAuth/SimpleLogger";
-console.log(`dataverse-auth v${version}`);
+import chalk from "chalk";
+console.log(chalk.yellow(`dataverse-auth v${version}`));
+console.log(
+  chalk.gray(`
+  This is a beta version. v2 is not compatible with version v1 of dataverse-ify and dataverse-gen.
+  Use npx dataverse-auth@1 instead if you want to continue to use the older version.`),
+);
 
 const ARG_LOG = "log";
 const ARG_TEST_CONNECTION = "test-connection";
@@ -58,17 +64,22 @@ async function main(): Promise<void> {
 
 async function getEnvironmentUrl(): Promise<string> {
   if (!environmentUrl) {
-    const response = await prompt<{ env: string }>({
-      type: "input",
-      name: "env",
-      message: "Enter environment url (e.g. org.crm.dynamics.com)",
-    });
+    try {
+      const response = await prompt<{ env: string }>({
+        type: "input",
+        name: "env",
+        message: "Enter environment url (e.g. org.crm.dynamics.com)",
+      });
 
-    if (response && response.env) {
-      environmentUrl = response.env;
-    } else {
-      throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
+      if (response && response.env) {
+        environmentUrl = response.env;
+      }
+    } catch {
+      //noop
     }
+  }
+  if (!environmentUrl) {
+    throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
   }
   return environmentUrl;
 }
@@ -111,9 +122,10 @@ async function testAuth(): Promise<void> {
 }
 
 async function deviceCodeAuth(): Promise<void> {
-  await getEnvironmentUrl();
-  console.log(`Authenticating for environment (using device code flow): '${environmentUrl}'`);
   try {
+    await getEnvironmentUrl();
+    console.log(`Authenticating for environment (using device code flow): '${environmentUrl}'`);
+
     const result = await acquireTokenUsingDeviceCode(environmentUrl);
 
     if (result) {
@@ -127,39 +139,43 @@ async function deviceCodeAuth(): Promise<void> {
 }
 
 async function interactiveAuth(): Promise<void> {
-  await getEnvironmentUrl();
+  try {
+    await getEnvironmentUrl();
 
-  console.log(`Authenticating for environment: '${environmentUrl}'`);
+    console.log(`Authenticating for environment: '${environmentUrl}'`);
 
-  // We create a child process to perform the interact authentication using the electron process
-  // This returns the auth code which is then used to get the token from MSAL
-  const child = proc.spawn(electron, [currentDir + "/.", ...args], {
-    windowsHide: false,
-  });
-  let authResult = "";
-
-  if (child.stdout) {
-    child.stdout.on("data", function (data) {
-      authResult += data.toString();
+    // We create a child process to perform the interact authentication using the electron process
+    // This returns the auth code which is then used to get the token from MSAL
+    const child = proc.spawn(electron, [currentDir + "/.", ...args], {
+      windowsHide: false,
     });
+    let authResult = "";
+
+    if (child.stdout) {
+      child.stdout.on("data", function (data) {
+        authResult += data.toString();
+      });
+    }
+
+    child.on("close", function () {
+      onCloseCallback(authResult);
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type
+    const handleTerminationSignal = function (signal: any) {
+      process.on(signal, function signalHandler() {
+        if (!child.killed) {
+          child.kill(signal);
+        }
+      });
+    };
+
+    handleTerminationSignal("SIGINT");
+    handleTerminationSignal("SIGTERM");
+  } catch (error) {
+    console.error(`Authentication failed: ${error}`);
+    exit(1);
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  child.on("close", function (code: number) {
-    onCloseCallback(authResult);
-  });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type
-  const handleTerminationSignal = function (signal: any) {
-    process.on(signal, function signalHandler() {
-      if (!child.killed) {
-        child.kill(signal);
-      }
-    });
-  };
-
-  handleTerminationSignal("SIGINT");
-  handleTerminationSignal("SIGTERM");
 }
 
 async function onCloseCallback(authResult: string): Promise<void> {
