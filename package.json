@@ -10,10 +10,13 @@
   "scripts": {
     "build": "tsc",
     "dist": "genversion --es6 --semi src/version.ts & tsc",
-    "prepublish": "genversion --es6 --semi --double src/version.ts & tsc",
     "start": "tsc & node dist/dataverse-auth.js",
     "electron": "tsc & electron .",
-    "genversion": "genversion"
+    "test": "tsc",
+    "prepublishOnly": "npm version patch",
+    "preversion": "npm test",
+    "version": "npm run build",
+    "postversion": "genversion --es6 --semi --double src/version.ts & git add . & git commit -m \"Version bump\" & git push"
   },
   "author": "",
   "license": "ISC",

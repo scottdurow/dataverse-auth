@@ -3,6 +3,8 @@
         "contoso",
         "genversion",
         "haschrome",
-        "msal"
+        "msal",
+        "postversion",
+        "preversion"
     ]
 }
