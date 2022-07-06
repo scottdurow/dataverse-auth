@@ -22,6 +22,23 @@
         //     ],
         //     "type": "node"
         // }
-        
+        {
+            "type": "node",
+            "name": "vscode-jest-tests",
+            "request": "launch",
+            "args": ["${fileBasename}", "--runInBand", "--code-coverage=false"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "smartStep": true,
+            "internalConsoleOptions": "neverOpen",
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "skipFiles": ["node_modules/**/*.js",  "<node_internals>/**"],
+            "runtimeArgs": [
+                "--harmony",
+                "--no-deprecation"
+            ],
+            "sourceMaps": true
+        }
     ]
 }

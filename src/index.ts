@@ -3,17 +3,11 @@ import { LogLevel } from "@azure/msal-node";
 import { interactiveAcquireAuthCode, InteractiveAcquireAuthCodeResult } from "./MsalAuth/InteractiveAuthenticate";
 import { SimpleLogger } from "./MsalAuth/SimpleLogger";
 import { exit } from "process";
+import minimist from "minimist";
 
-let argTenant: string | undefined;
-let argEnvUrl: string;
-if (process.argv.length >= 4) {
-  // If 2 parameters, assume we pass tenant and environment Url
-  argTenant = process.argv[2]; //"contoso.onmicrosoft.com";
-  argEnvUrl = process.argv[3]; //"contoso-env.crm11.dynamics.com";
-} else {
-  // If 1 parameter, assume just the environment Url
-  argEnvUrl = process.argv[2]; //"contoso-env.crm11.dynamics.com";
-}
+const args = minimist(process.argv.slice(2));
+const argTenant: string | undefined = args.t;
+const argEnvUrl: string = args.e;
 
 function outputResult(result: InteractiveAcquireAuthCodeResult): void {
   console.log(JSON.stringify(result));
