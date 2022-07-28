@@ -37,6 +37,6 @@ Change the owner of chrome-sandbox to root and chmod it to 4755:
 Now you can run it like any other package:  
 `~$ dataverse-auth myorg.crm.dynamics.com`
 
-## MacOS, Apple Silicon using
+## MacOS, Apple Silicon usage
 For NPX to work you need to run it using `npx dataverse-auth@beta <org url>`.
 It might be changed later.
