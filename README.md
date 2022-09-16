@@ -38,6 +38,7 @@ Now you can run it like any other package:
 `~$ dataverse-auth myorg.crm.dynamics.com`
 
 ### Build & Test
+`dataverse-auth` uses electron which uses node-gyp. You will need to install Python and Visual Studio C++ core features.
 To build & test locally, use:
 ```
 npm run start org.api.crm3.dynamics.com

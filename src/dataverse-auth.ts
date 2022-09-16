@@ -81,6 +81,13 @@ async function getEnvironmentUrl(): Promise<string> {
   if (!environmentUrl) {
     throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
   }
+
+  // Normalize environment Url
+  if (!environmentUrl.toLowerCase().startsWith("http")){
+    environmentUrl = "https://" + environmentUrl;
+  }
+  environmentUrl = new URL(environmentUrl).hostname;
+
   return environmentUrl;
 }
 

@@ -3,6 +3,7 @@
         "contoso",
         "genversion",
         "haschrome",
-        "msal"
+        "msal",
+        "sonarjs"
     ]
 }
