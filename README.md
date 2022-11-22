@@ -1,5 +1,5 @@
 # dataverse-auth
-Cross-platform pure NodeJS On-behalf-of authenticaiton against Microsoft dataverse Pro. Stores the token for use with NodeJS applications such as [dataverseify](https://github.com/scottdurow/dataverse-ify/wiki)
+Cross-platform pure NodeJS On-behalf-of authentication against Microsoft dataverse Pro. Stores the token for use with NodeJS applications such as [dataverseify](https://github.com/scottdurow/dataverse-ify/wiki)
 
 ## Usage
 `~$ npx dataverse-auth [environment]`\
@@ -36,3 +36,14 @@ Change the owner of chrome-sandbox to root and chmod it to 4755:
 
 Now you can run it like any other package:  
 `~$ dataverse-auth myorg.crm.dynamics.com`
+
+### Build & Test
+To build & test locally, use:
+```
+npm run start org.api.crm3.dynamics.com
+npm run start list
+npm run start org.api.crm3.dynamics.com test-connection
+```
+
+### ADAL -> MSAL
+As of version 2, dataverse-ify now uses MSAL for all authentication based on guidance given by https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-node-migration
