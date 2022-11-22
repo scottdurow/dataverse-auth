@@ -1,41 +1,227 @@
 #!/usr/bin/env node
-
+/* eslint-disable @typescript-eslint/no-use-before-define */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const electron = require("electron/");
-
 import proc from "child_process";
+import { exit } from "process";
+import { InteractiveAcquireAuthCodeResult } from "./MsalAuth/InteractiveAuthenticate";
+import {
+  acquireToken,
+  acquireTokenByCodeMsal,
+  acquireTokenUsingDeviceCode,
+  getAllUsers,
+  removeToken,
+} from "./MsalAuth/MsalNodeAuth";
+import { version } from "./version";
+import { prompt } from "enquirer";
+import { SimpleLogger } from "./MsalAuth/SimpleLogger";
+import chalk from "chalk";
+console.log(chalk.yellow(`dataverse-auth v${version}`));
+console.log(
+  chalk.yellow(`
+  NOTE: `) +
+    chalk.gray(`Version 2 of dataverse-auth is not compatible with version Version 1 of dataverse-ify and dataverse-gen.
+  Use npx dataverse-auth@1 instead if you want to continue to use the older version.
+  `),
+);
 
-// Get the tenant and env url from the arguments
-if (process.argv.length < 3) {
-  console.log(
-    "Please supply the Microsoft Dataverse envrionment url (e.g. >dataverse-auth contoso-env.crm11.dynamics.com)",
-  );
-  process.exit();
-} else {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  main();
+const ARG_LOG = "log";
+const ARG_TEST_CONNECTION = "test-connection";
+const ARG_LIST = "list";
+const ARG_REMOVE = "remove";
+const ARG_DEVICE_CODE = "device-code";
+const argFlags = [ARG_LOG, ARG_TEST_CONNECTION, ARG_LIST, ARG_REMOVE, ARG_DEVICE_CODE];
+const verboseLog = process.argv.findIndex((a) => a === argFlags[0]) > -1;
+if (verboseLog) {
+  console.log("Verbose logging ON");
 }
 
-function main(): void {
-  const currentDir = __dirname;
-  const child = proc.spawn(electron, [currentDir + "/.", ...process.argv.slice(2)], {
-    stdio: "inherit",
-    windowsHide: false,
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  child.on("close", function(code: any) {
-    process.exit(code);
-  });
+// Remove flags and node args
+const args = process.argv.filter((a) => argFlags.indexOf(a) === -1).slice(2);
+const currentDir = __dirname;
+let environmentUrl = args[0];
+const tenantUrl = args[1];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type
-  const handleTerminationSignal = function(signal: any) {
-    process.on(signal, function signalHandler() {
-      if (!child.killed) {
-        child.kill(signal);
+main();
+
+async function main(): Promise<void> {
+  // Which command to run?
+  switch (getCommand()) {
+    case ARG_TEST_CONNECTION:
+      await testAuth();
+      break;
+    case ARG_LIST:
+      listAuth();
+      break;
+    case ARG_REMOVE:
+      removeAuth();
+      break;
+    case ARG_DEVICE_CODE:
+      await deviceCodeAuth();
+      break;
+    default:
+      await interactiveAuth();
+      break;
+  }
+}
+
+async function getEnvironmentUrl(): Promise<string> {
+  if (!environmentUrl) {
+    try {
+      const response = await prompt<{ env: string }>({
+        type: "input",
+        name: "env",
+        message: "Enter environment url (e.g. org.crm.dynamics.com)",
+      });
+
+      if (response && response.env) {
+        environmentUrl = response.env;
       }
-    });
-  };
+    } catch {
+      //noop
+    }
+  }
+  if (!environmentUrl) {
+    throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
+  }
 
-  handleTerminationSignal("SIGINT");
-  handleTerminationSignal("SIGTERM");
+  // Normalize environment Url
+  if (!environmentUrl.toLowerCase().startsWith("http")) {
+    environmentUrl = "https://" + environmentUrl;
+  }
+  environmentUrl = new URL(environmentUrl).hostname;
+
+  return environmentUrl;
+}
+
+function getCommand(): string | undefined {
+  return process.argv.find((a) => argFlags.indexOf(a) > -1);
+}
+
+function listAuth(): void {
+  console.log("Current Microsoft Dataverse user profiles:");
+  getAllUsers().forEach((a, i) => console.log(`[${i}]   ${a.userName}\t: ${a.environment}`));
+  exit();
+}
+
+function removeAuth(): void {
+  removeToken(environmentUrl)
+    .catch((error) => {
+      console.error(error);
+      exit(1);
+    })
+    .then(() => {
+      console.log(`Authentication profile removed for ${environmentUrl}`);
+      exit(0);
+    });
+}
+
+async function testAuth(): Promise<void> {
+  const logger = new SimpleLogger();
+  try {
+    const bearerToken = await acquireToken(environmentUrl, logger.Log);
+    logger.OutputToConsole(verboseLog);
+    console.log(`\nBearer ${bearerToken}`);
+    console.log(`\nAuthentication successful for ${environmentUrl}`);
+    exit(0);
+  } catch (error) {
+    logger.OutputToConsole(verboseLog);
+    console.error(`Authentication failed: ${error}`);
+    exit(1);
+  }
+}
+
+async function deviceCodeAuth(): Promise<void> {
+  try {
+    await getEnvironmentUrl();
+    console.log(`Authenticating for environment (using device code flow): '${environmentUrl}'`);
+
+    const result = await acquireTokenUsingDeviceCode(environmentUrl);
+
+    if (result) {
+      console.log(`Authentication successful for ${result.account?.name} (${result.account?.username})`);
+    }
+    exit(0);
+  } catch (error) {
+    console.error(`Authentication failed: ${error}`);
+    exit(1);
+  }
+}
+
+async function interactiveAuth(): Promise<void> {
+  try {
+    await getEnvironmentUrl();
+
+    console.log(`Authenticating for environment: '${environmentUrl}'`);
+
+    // We create a child process to perform the interact authentication using the electron process
+    // This returns the auth code which is then used to get the token from MSAL
+    const authArgs = [environmentUrl];
+    if (tenantUrl) {
+      authArgs.push(environmentUrl);
+    }
+
+    const child = proc.spawn(electron, [currentDir + "/.", ...authArgs], {
+      windowsHide: false,
+    });
+    let authResult = "";
+
+    if (child.stdout) {
+      child.stdout.on("data", function (data) {
+        authResult += data.toString();
+      });
+    }
+
+    child.on("close", function () {
+      onCloseCallback(authResult);
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type
+    const handleTerminationSignal = function (signal: any) {
+      process.on(signal, function signalHandler() {
+        if (!child.killed) {
+          child.kill(signal);
+        }
+      });
+    };
+
+    handleTerminationSignal("SIGINT");
+    handleTerminationSignal("SIGTERM");
+  } catch (error) {
+    console.error(`Authentication failed: ${error}`);
+    exit(1);
+  }
+}
+
+async function onCloseCallback(authResult: string): Promise<void> {
+  const logger = new SimpleLogger();
+  try {
+    // Auth using msal
+    // Get the first { to mark start of JSON
+    const startIndex = authResult.indexOf("{");
+    if (startIndex === -1) {
+      throw "Unexpected result:" + authResult;
+    }
+
+    const result = JSON.parse(authResult.substring(startIndex)) as InteractiveAcquireAuthCodeResult;
+
+    logger.AppendLog(result.log);
+
+    if (result.authCode) {
+      const msalResult = await acquireTokenByCodeMsal(environmentUrl, result.authCode, logger.Log);
+      if (msalResult) {
+        if (verboseLog) {
+          // output log, but don't output the token for brevity
+          logger.OutputToConsole(verboseLog);
+          console.log({ ...msalResult, ...{ idToken: "****", accessToken: "****" } });
+        }
+        console.log(`Authentication successful for ${msalResult.account?.name} (${msalResult.account?.username})`);
+      }
+      exit(0);
+    }
+  } catch (error) {
+    logger.OutputToConsole(verboseLog);
+    console.error(`Authentication failed: ${error}`);
+    exit(1);
+  }
 }
