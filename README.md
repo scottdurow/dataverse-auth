@@ -1,5 +1,8 @@
 # dataverse-auth
-Cross-platform pure NodeJS On-behalf-of authentication against Microsoft dataverse Pro. Stores the token for use with NodeJS applications such as [dataverseify](https://github.com/scottdurow/dataverse-ify/wiki)
+Cross-platform pure NodeJS On-behalf-of authentication against Microsoft dataverse Pro. Stores the token for use with NodeJS applications such as [dataverseify](https://github.com/scottdurow/dataverse-ify)
+
+> **Note:** Version 2 of dataverse-auth is not compatible with version Version 1 of dataverse-ify and dataverse-gen.
+  Use npx dataverse-auth@1 instead if you want to continue to use the older version
 
 ## Usage
 `~$ npx dataverse-auth [environment]`\
@@ -11,7 +14,7 @@ You you want to specify the tenant Url rather that it be looked up automatically
 `~$ npx dataverse-auth [tennant] [environment]`\
 E.g.\
 `~$ npx dataverse-auth contoso.onmicrosoft.com contosoorg.crm.dynamics.com`
-For more information see the [dataverse-ify project](https://github.com/scottdurow/dataverse-ify/wiki)
+For more information see the [dataverse-ify project](https://github.com/scottdurow/dataverse-ify)
 
 ## Tested on
 - Linux

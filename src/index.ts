@@ -4,16 +4,8 @@ import { interactiveAcquireAuthCode, InteractiveAcquireAuthCodeResult } from "./
 import { SimpleLogger } from "./MsalAuth/SimpleLogger";
 import { exit } from "process";
 
-let argTenant: string | undefined;
-let argEnvUrl: string;
-if (process.argv.length >= 4) {
-  // If 2 parameters, assume we pass tenant and environment Url
-  argTenant = process.argv[2]; //"contoso.onmicrosoft.com";
-  argEnvUrl = process.argv[3]; //"contoso-env.crm11.dynamics.com";
-} else {
-  // If 1 parameter, assume just the environment Url
-  argEnvUrl = process.argv[2]; //"contoso-env.crm11.dynamics.com";
-}
+const argEnvUrl: string | undefined = process.argv[2]; //org e.g. "contoso-env.crm11.dynamics.com";
+const argTenant: string | undefined = process.argv[3]; //tenant e.g. "contoso.onmicrosoft.com";
 
 function outputResult(result: InteractiveAcquireAuthCodeResult): void {
   console.log(JSON.stringify(result));

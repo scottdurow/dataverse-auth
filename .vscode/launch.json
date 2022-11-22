@@ -5,10 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm start org1bfe9950.crm3.dynamics.com",
+            "program": "${workspaceFolder}/dist/dataverse-auth.js",
             "name": "Run npm start",
+            "preLaunchTask": "${defaultBuildTask}",
             "request": "launch",
-            "type": "node-terminal"
+            "console": "integratedTerminal",
+            "type": "node",
+            "autoAttachChildProcesses": true,
+            "smartStep": true
         },
         
         // {
