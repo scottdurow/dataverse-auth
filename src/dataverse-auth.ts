@@ -18,9 +18,11 @@ import { SimpleLogger } from "./MsalAuth/SimpleLogger";
 import chalk from "chalk";
 console.log(chalk.yellow(`dataverse-auth v${version}`));
 console.log(
-  chalk.gray(`
-  This is a beta version. v2 is not compatible with version v1 of dataverse-ify and dataverse-gen.
-  Use npx dataverse-auth@1 instead if you want to continue to use the older version.`),
+  chalk.yellow(`
+  NOTE: `) +
+    chalk.gray(`Version 2 of dataverse-auth is not compatible with version Version 1 of dataverse-ify and dataverse-gen.
+  Use npx dataverse-auth@1 instead if you want to continue to use the older version.
+  `),
 );
 
 const ARG_LOG = "log";
@@ -38,6 +40,7 @@ if (verboseLog) {
 const args = process.argv.filter((a) => argFlags.indexOf(a) === -1).slice(2);
 const currentDir = __dirname;
 let environmentUrl = args[0];
+const tenantUrl = args[1];
 
 main();
 
@@ -81,6 +84,13 @@ async function getEnvironmentUrl(): Promise<string> {
   if (!environmentUrl) {
     throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
   }
+
+  // Normalize environment Url
+  if (!environmentUrl.toLowerCase().startsWith("http")) {
+    environmentUrl = "https://" + environmentUrl;
+  }
+  environmentUrl = new URL(environmentUrl).hostname;
+
   return environmentUrl;
 }
 
@@ -146,7 +156,12 @@ async function interactiveAuth(): Promise<void> {
 
     // We create a child process to perform the interact authentication using the electron process
     // This returns the auth code which is then used to get the token from MSAL
-    const child = proc.spawn(electron, [currentDir + "/.", ...args], {
+    const authArgs = [environmentUrl];
+    if (tenantUrl) {
+      authArgs.push(environmentUrl);
+    }
+
+    const child = proc.spawn(electron, [currentDir + "/.", ...authArgs], {
       windowsHide: false,
     });
     let authResult = "";

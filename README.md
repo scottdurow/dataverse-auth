@@ -1,5 +1,8 @@
 # dataverse-auth
-Cross-platform pure NodeJS On-behalf-of authentication against Microsoft dataverse Pro. Stores the token for use with NodeJS applications such as [dataverseify](https://github.com/scottdurow/dataverse-ify/wiki)
+Cross-platform pure NodeJS On-behalf-of authentication against Microsoft dataverse Pro. Stores the token for use with NodeJS applications such as [dataverseify](https://github.com/scottdurow/dataverse-ify)
+
+> **Note:** Version 2 of dataverse-auth is not compatible with version Version 1 of dataverse-ify and dataverse-gen.
+  Use npx dataverse-auth@1 instead if you want to continue to use the older version
 
 ## Usage
 `~$ npx dataverse-auth [environment]`\
@@ -11,7 +14,13 @@ You you want to specify the tenant Url rather that it be looked up automatically
 `~$ npx dataverse-auth [tennant] [environment]`\
 E.g.\
 `~$ npx dataverse-auth contoso.onmicrosoft.com contosoorg.crm.dynamics.com`
-For more information see the [dataverse-ify project](https://github.com/scottdurow/dataverse-ify/wiki)
+For more information see the [dataverse-ify project](https://github.com/scottdurow/dataverse-ify)
+
+## Other commands
+`npx dataverse-auth list` : Lists the currently authenticated environments
+`npx dataverse auth [environmentUrl] test-connection` : Tests a previously authenticated environment
+`npx dataverse auth [environmentUrl] remove` : Removes the stored token for an authenticated environment
+`npx dataverse auth [environmentUrl] device-code` : Adds an authentication profile using the device-code flow. Use this if you are having trouble authenticating using the interactive prompt.
 
 ## Tested on
 - Linux
@@ -38,6 +47,7 @@ Now you can run it like any other package:
 `~$ dataverse-auth myorg.crm.dynamics.com`
 
 ### Build & Test
+`dataverse-auth` uses electron which uses node-gyp. You will need to install Python and Visual Studio C++ core features.
 To build & test locally, use:
 ```
 npm run start org.api.crm3.dynamics.com
