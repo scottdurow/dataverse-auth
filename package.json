@@ -10,10 +10,14 @@
   "scripts": {
     "build": "tsc",
     "dist": "genversion --es6 --semi src/version.ts & tsc",
-    "prepublish": "genversion --es6 --semi --double src/version.ts & tsc",
+    "prepublishOnly": "npm version patch",
+    "version": "genversion --es6 --semi --double src/version.ts && npm run build",
+    "postversion": "git push && git push --tags && rm -rf build/temp",
     "start": "tsc & node dist/dataverse-auth.js",
     "electron": "tsc & electron .",
-    "genversion": "genversion"
+    "genversion": "genversion",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "npm run lint -- --fix"
   },
   "author": "",
   "license": "MIT",
