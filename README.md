@@ -16,6 +16,12 @@ E.g.\
 `~$ npx dataverse-auth contoso.onmicrosoft.com contosoorg.crm.dynamics.com`
 For more information see the [dataverse-ify project](https://github.com/scottdurow/dataverse-ify)
 
+## Other commands
+`npx dataverse-auth list` : Lists the currently authenticated environments
+`npx dataverse auth [environmentUrl] test-connection` : Tests a previously authenticated environment
+`npx dataverse auth [environmentUrl] remove` : Removes the stored token for an authenticated environment
+`npx dataverse auth [environmentUrl] device-code` : Adds an authentication profile using the device-code flow. Use this if you are having trouble authenticating using the interactive prompt.
+
 ## Tested on
 - Linux
   - ✔ Manjaro
