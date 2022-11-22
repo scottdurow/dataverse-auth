@@ -46,6 +46,9 @@ Change the owner of chrome-sandbox to root and chmod it to 4755:
 Now you can run it like any other package:  
 `~$ dataverse-auth myorg.crm.dynamics.com`
 
+## MacOS, Apple Silicon usage
+Version 2 is required to work on MacOS Apple Silicon - `npx dataverse-auth@2 <org url>`.
+
 ### Build & Test
 `dataverse-auth` uses electron which uses node-gyp. You will need to install Python and Visual Studio C++ core features.
 To build & test locally, use:
