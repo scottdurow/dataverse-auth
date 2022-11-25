@@ -83,6 +83,13 @@ async function getEnvironmentUrl(args: DataverseAuthArgs): Promise<string> {
   if (!args.environmentUrl) {
     throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
   }
+
+  // Normalize environment Url
+  if (!args.environmentUrl.toLowerCase().startsWith("http")) {
+    args.environmentUrl = "https://" + args.environmentUrl;
+  }
+  args.environmentUrl = new URL(args.environmentUrl).hostname;
+
   return args.environmentUrl;
 }
 
