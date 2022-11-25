@@ -19,9 +19,11 @@ import chalk from "chalk";
 import { DataverseAuthArgs, DataverseAuthCommands } from "./DataverseAuthArgs";
 console.log(chalk.yellow(`dataverse-auth v${version}`));
 console.log(
-  chalk.gray(`
-  This is a beta version. v2 is not compatible with version v1 of dataverse-ify and dataverse-gen.
-  Use npx dataverse-auth@1 instead if you want to continue to use the older version.`),
+  chalk.yellow(`
+  NOTE: `) +
+    chalk.gray(`Version 2 of dataverse-auth is not compatible with version Version 1 of dataverse-ify and dataverse-gen.
+  Use npx dataverse-auth@1 instead if you want to continue to use the older version.
+  `),
 );
 
 const currentDir = __dirname;

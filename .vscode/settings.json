@@ -5,6 +5,7 @@
         "haschrome",
         "msal",
         "postversion",
-        "preversion"
+        "preversion",
+        "sonarjs"
     ]
 }

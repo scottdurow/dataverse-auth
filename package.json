@@ -1,6 +1,6 @@
 {
   "name": "dataverse-auth",
-  "version": "2.0.2",
+  "version": "2.0.5",
   "description": "Performs on-behalf-of auth against a Microsoft Dataverse environment. Stores the token a local token for use in other NodeJS applications.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,7 +19,7 @@
     "postversion": "git add . & git commit -m \"Version bump\" & git push"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@azure/msal-common": "^7.1.0",
     "@azure/msal-node": "^1.11.0",
