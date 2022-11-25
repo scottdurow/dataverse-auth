@@ -1,7 +1,7 @@
 {
   "name": "dataverse-auth",
   "version": "2.0.5",
-  "description": "Performs on-behalf-of auth against a Microsoft Dataverse environment. Stores the token a local token for use in other NodeJS applications.",
+  "description": "Performs auth against a Microsoft Dataverse environment. Stores the token for use in other NodeJS applications.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -10,13 +10,15 @@
   "scripts": {
     "build": "tsc",
     "dist": "genversion --es6 --semi src/version.ts & tsc",
+    "prepublishOnly": "npm version patch",
+    "version": "genversion --es6 --semi --double src/version.ts && npm run build && git add src/version.ts",
+    "postversion": "git push && git push --tags",
     "start": "tsc & node dist/dataverse-auth.js",
     "electron": "tsc & electron .",
-    "test": "jest",
-    "prepublishOnly": "npm version patch",
-    "preversion": "npm test",
-    "version": "genversion --es6 --semi --double src/version.ts & npm run build",
-    "postversion": "git add . & git commit -m \"Version bump\" & git push"
+    "genversion": "genversion",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "jest"
   },
   "author": "",
   "license": "MIT",
