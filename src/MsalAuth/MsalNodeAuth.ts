@@ -226,7 +226,7 @@ export async function acquireToken(environmentUrl: string, logger?: ILoggerCallb
   const accounts = await client.getTokenCache().getAllAccounts();
   // Find the account for the given environment
   const account = getAccountByEnvUrl(accounts, envUrl);
-  if (!account) throw `Cannot find profile for environment. Run 'dataverse-auth ${envUrl}`;
+  if (!account) throw "Cannot find profile for environment. Re-run npx dataverse-auth for this environment.";
 
   const scopes = ["openid", `https://${envUrl}/.default`];
   const response = await client.acquireTokenSilent({ account: account, scopes: scopes } as SilentFlowRequest);
