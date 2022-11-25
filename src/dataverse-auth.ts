@@ -16,6 +16,7 @@ import { version } from "./version";
 import { prompt } from "enquirer";
 import { SimpleLogger } from "./MsalAuth/SimpleLogger";
 import chalk from "chalk";
+import { DataverseAuthArgs, DataverseAuthCommands } from "./DataverseAuthArgs";
 console.log(chalk.yellow(`dataverse-auth v${version}`));
 console.log(
   chalk.yellow(`
@@ -25,48 +26,46 @@ console.log(
   `),
 );
 
-const ARG_LOG = "log";
-const ARG_TEST_CONNECTION = "test-connection";
-const ARG_LIST = "list";
-const ARG_REMOVE = "remove";
-const ARG_DEVICE_CODE = "device-code";
-const argFlags = [ARG_LOG, ARG_TEST_CONNECTION, ARG_LIST, ARG_REMOVE, ARG_DEVICE_CODE];
-const verboseLog = process.argv.findIndex((a) => a === argFlags[0]) > -1;
-if (verboseLog) {
-  console.log("Verbose logging ON");
-}
-
-// Remove flags and node args
-const args = process.argv.filter((a) => argFlags.indexOf(a) === -1).slice(2);
 const currentDir = __dirname;
-let environmentUrl = args[0];
-const tenantUrl = args[1];
 
 main();
 
 async function main(): Promise<void> {
-  // Which command to run?
-  switch (getCommand()) {
-    case ARG_TEST_CONNECTION:
-      await testAuth();
-      break;
-    case ARG_LIST:
-      listAuth();
-      break;
-    case ARG_REMOVE:
-      removeAuth();
-      break;
-    case ARG_DEVICE_CODE:
-      await deviceCodeAuth();
-      break;
-    default:
-      await interactiveAuth();
-      break;
+  try {
+    const args = new DataverseAuthArgs(process.argv.slice(2));
+
+    if (args.verboseLogging) {
+      console.log("Verbose logging ON");
+    }
+
+    // Which command to run?
+    switch (args.command) {
+      case DataverseAuthCommands.Help:
+        args.outputHelp();
+        break;
+      case DataverseAuthCommands.TestConnection:
+        await testAuth(args);
+        break;
+      case DataverseAuthCommands.List:
+        listAuth();
+        break;
+      case DataverseAuthCommands.Remove:
+        removeAuth(args);
+        break;
+      case DataverseAuthCommands.DeviceCode:
+        await deviceCodeAuth(args);
+        break;
+      default:
+        await interactiveAuth(args);
+        break;
+    }
+  } catch (e) {
+    console.log(chalk.red(e));
   }
 }
 
-async function getEnvironmentUrl(): Promise<string> {
-  if (!environmentUrl) {
+async function getEnvironmentUrl(args: DataverseAuthArgs): Promise<string> {
+  if (!args.environmentUrl) {
     try {
       const response = await prompt<{ env: string }>({
         type: "input",
@@ -75,27 +74,23 @@ async function getEnvironmentUrl(): Promise<string> {
       });
 
       if (response && response.env) {
-        environmentUrl = response.env;
+        args.environmentUrl = response.env;
       }
     } catch {
       //noop
     }
   }
-  if (!environmentUrl) {
+  if (!args.environmentUrl) {
     throw "Please provide an environment url. (e.g. org.crm.dynamics.com)";
   }
 
   // Normalize environment Url
-  if (!environmentUrl.toLowerCase().startsWith("http")) {
-    environmentUrl = "https://" + environmentUrl;
+  if (!args.environmentUrl.toLowerCase().startsWith("http")) {
+    args.environmentUrl = "https://" + args.environmentUrl;
   }
-  environmentUrl = new URL(environmentUrl).hostname;
+  args.environmentUrl = new URL(args.environmentUrl).hostname;
 
-  return environmentUrl;
-}
-
-function getCommand(): string | undefined {
-  return process.argv.find((a) => argFlags.indexOf(a) > -1);
+  return args.environmentUrl;
 }
 
 function listAuth(): void {
@@ -104,43 +99,43 @@ function listAuth(): void {
   exit();
 }
 
-function removeAuth(): void {
-  removeToken(environmentUrl)
+function removeAuth(args: DataverseAuthArgs): void {
+  removeToken(args.environmentUrl)
     .catch((error) => {
       console.error(error);
       exit(1);
     })
     .then(() => {
-      console.log(`Authentication profile removed for ${environmentUrl}`);
+      console.log(`Authentication profile removed for ${args.environmentUrl}`);
       exit(0);
     });
 }
 
-async function testAuth(): Promise<void> {
+async function testAuth(args: DataverseAuthArgs): Promise<void> {
   const logger = new SimpleLogger();
   try {
-    const bearerToken = await acquireToken(environmentUrl, logger.Log);
-    logger.OutputToConsole(verboseLog);
+    const bearerToken = await acquireToken(args.environmentUrl, logger.Log);
+    logger.OutputToConsole(args.verboseLogging);
     console.log(`\nBearer ${bearerToken}`);
-    console.log(`\nAuthentication successful for ${environmentUrl}`);
+    console.log(`\nAuthentication successful for ${args.environmentUrl}`);
     exit(0);
   } catch (error) {
-    logger.OutputToConsole(verboseLog);
+    logger.OutputToConsole(args.verboseLogging);
     console.error(`Authentication failed: ${error}`);
     exit(1);
   }
 }
 
-async function deviceCodeAuth(): Promise<void> {
+async function deviceCodeAuth(args: DataverseAuthArgs): Promise<void> {
   try {
-    await getEnvironmentUrl();
-    console.log(`Authenticating for environment (using device code flow): '${environmentUrl}'`);
+    await getEnvironmentUrl(args);
+    console.log(`Authenticating for environment (using device code flow): '${args.environmentUrl}'`);
 
-    const result = await acquireTokenUsingDeviceCode(environmentUrl);
+    const result = await acquireTokenUsingDeviceCode(args.environmentUrl);
 
     if (result) {
       console.log(`Authentication successful for ${result.account?.name} (${result.account?.username})`);
-    }
+    } else throw "Authentication cancelled";
     exit(0);
   } catch (error) {
     console.error(`Authentication failed: ${error}`);
@@ -148,20 +143,24 @@ async function deviceCodeAuth(): Promise<void> {
   }
 }
 
-async function interactiveAuth(): Promise<void> {
+async function interactiveAuth(args: DataverseAuthArgs): Promise<void> {
   try {
-    await getEnvironmentUrl();
+    await getEnvironmentUrl(args);
 
-    console.log(`Authenticating for environment: '${environmentUrl}'`);
+    console.log(`Authenticating for environment: '${args.environmentUrl}'`);
 
-    // We create a child process to perform the interact authentication using the electron process
+    // We create a child process to perform the interactive authentication using the electron process
     // This returns the auth code which is then used to get the token from MSAL
-    const authArgs = [environmentUrl];
-    if (tenantUrl) {
-      authArgs.push(environmentUrl);
+    const processArgs = [currentDir + "/."];
+    if (args.tenantUrl) {
+      processArgs.push("-t");
+      processArgs.push(args.tenantUrl);
     }
-
-    const child = proc.spawn(electron, [currentDir + "/.", ...authArgs], {
+    if (args.environmentUrl) {
+      processArgs.push("-e");
+      processArgs.push(args.environmentUrl);
+    }
+    const child = proc.spawn(electron, [currentDir + "/.", ...processArgs], {
       windowsHide: false,
     });
     let authResult = "";
@@ -173,7 +172,7 @@ async function interactiveAuth(): Promise<void> {
     }
 
     child.on("close", function () {
-      onCloseCallback(authResult);
+      onCloseCallback(authResult, args);
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-function-return-type
@@ -193,7 +192,7 @@ async function interactiveAuth(): Promise<void> {
   }
 }
 
-async function onCloseCallback(authResult: string): Promise<void> {
+async function onCloseCallback(authResult: string, args: DataverseAuthArgs): Promise<void> {
   const logger = new SimpleLogger();
   try {
     // Auth using msal
@@ -208,19 +207,23 @@ async function onCloseCallback(authResult: string): Promise<void> {
     logger.AppendLog(result.log);
 
     if (result.authCode) {
-      const msalResult = await acquireTokenByCodeMsal(environmentUrl, result.authCode, logger.Log);
+      const msalResult = await acquireTokenByCodeMsal(args.environmentUrl, result.authCode, logger.Log);
       if (msalResult) {
-        if (verboseLog) {
+        if (args.verboseLogging) {
           // output log, but don't output the token for brevity
-          logger.OutputToConsole(verboseLog);
+          logger.OutputToConsole(args.verboseLogging);
           console.log({ ...msalResult, ...{ idToken: "****", accessToken: "****" } });
         }
         console.log(`Authentication successful for ${msalResult.account?.name} (${msalResult.account?.username})`);
       }
       exit(0);
+    } else {
+      // get last error
+      const errorLog = result.log && result.log.find((l) => l.Level === 0);
+      throw errorLog?.Message ?? "Unknown error";
     }
   } catch (error) {
-    logger.OutputToConsole(verboseLog);
+    logger.OutputToConsole(args.verboseLogging);
     console.error(`Authentication failed: ${error}`);
     exit(1);
   }

@@ -3,13 +3,20 @@ import { constants } from "fs";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
+import Cryptr from "cryptr";
 
-// This is a simple plain text auth token cache
-// however we use the msal-node-extensions to provide a secure storage of tokens
+// This is a encrypted auth token cache
+// IDeally we should use msal-node-extensions to provide a secure storage of tokens
 // See https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-node-migration#enable-token-caching
+// However - this library does not come with pre-compiled native libraries
+// See https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/3332
 function getAuthCachePath(): string {
   const homeDirPath = os.homedir();
   return path.join(homeDirPath, "dataverse-auth-cache");
+}
+
+function getCrypto(): Cryptr {
+  return new Cryptr(os.userInfo().username);
 }
 
 // Call back APIs which automatically write and read into a .json file - example implementation
@@ -22,19 +29,24 @@ const beforeCacheAccess = async (cacheContext: TokenCacheContext): Promise<void>
     exists = false;
   }
   if (exists) {
-    const cache = await fs.readFile(cachePath, "utf-8");
-    cacheContext.tokenCache.deserialize(cache);
+    try {
+      const cache = await fs.readFile(cachePath, "utf-8");
+      cacheContext.tokenCache.deserialize(getCrypto().decrypt(cache));
+    } catch (e) {
+      console.warn(e);
+    }
   }
 };
 
 const afterCacheAccess = async (cacheContext: TokenCacheContext): Promise<void> => {
   if (cacheContext.cacheHasChanged) {
-    await fs.writeFile(getAuthCachePath(), cacheContext.tokenCache.serialize());
+    const data = getCrypto().encrypt(cacheContext.tokenCache.serialize());
+    await fs.writeFile(getAuthCachePath(), data);
   }
 };
 
 // Cache Plugin
-export const cachePlugin: ICachePlugin = {
+export const MsalCachePlugin: ICachePlugin = {
   beforeCacheAccess,
   afterCacheAccess,
 };

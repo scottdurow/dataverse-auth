@@ -3,9 +3,11 @@ import { LogLevel } from "@azure/msal-node";
 import { interactiveAcquireAuthCode, InteractiveAcquireAuthCodeResult } from "./MsalAuth/InteractiveAuthenticate";
 import { SimpleLogger } from "./MsalAuth/SimpleLogger";
 import { exit } from "process";
+import minimist from "minimist";
 
-const argEnvUrl: string | undefined = process.argv[2]; //org e.g. "contoso-env.crm11.dynamics.com";
-const argTenant: string | undefined = process.argv[3]; //tenant e.g. "contoso.onmicrosoft.com";
+const args = minimist(process.argv.slice(2));
+const argTenant: string | undefined = args.t;
+const argEnvUrl: string = args.e;
 
 function outputResult(result: InteractiveAcquireAuthCodeResult): void {
   console.log(JSON.stringify(result));

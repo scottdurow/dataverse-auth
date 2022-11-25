@@ -17,28 +17,36 @@
     "electron": "tsc & electron .",
     "genversion": "genversion",
     "lint": "eslint src --ext .ts",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "test": "jest"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@azure/msal-node": "^1.9.0",
-    "@azure/msal-node-extensions": "^1.0.0-alpha.17",
+    "@azure/msal-common": "^7.1.0",
+    "@azure/msal-node": "^1.11.0",
     "@types/node-fetch": "^2.6.1",
-    "chalk": "4.1.0",
+    "chalk": "^4.1.0",
+    "cryptr": "^6.0.3",
     "electron": "^19.0.3",
     "enquirer": "^2.3.6",
     "eslint-plugin-sonarjs": "^0.13.0",
+    "minimist": "^1.2.6",
     "node-fetch": "^2.6.7"
   },
   "devDependencies": {
+    "@types/cryptr": "^4.0.1",
+    "@types/jest": "^28.1.4",
+    "@types/minimist": "^1.2.2",
     "@typescript-eslint/eslint-plugin": "^5.27.1",
     "@typescript-eslint/parser": "^5.27.1",
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "genversion": "^3.1.1",
+    "jest": "^28.1.2",
     "prettier": "^2.6.2",
+    "ts-jest": "^28.0.5",
     "typescript": "^4.7.3",
     "typescript-eslint": "^0.0.1-alpha.0"
   }

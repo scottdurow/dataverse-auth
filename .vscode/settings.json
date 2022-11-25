@@ -4,6 +4,8 @@
         "genversion",
         "haschrome",
         "msal",
+        "postversion",
+        "preversion",
         "sonarjs"
     ]
 }
